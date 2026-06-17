@@ -4,7 +4,6 @@ This project analyzes online chess games from a 200,000-game Lichess dataset. Th
 
 The project is currently in progress. The first notebook focuses on dataset feasibility, cleaning, and game-level feature preparation. The second notebook uses SQL to analyze metadata-level patterns around time controls, termination types, rating favorites, and rating gaps. The next notebook will explore engine-evaluation features in more detail.
 
-
 ## Project Motivation
 
 I chose this dataset because it contains both simple game-level metadata and deeper chess-specific information such as move history, clock values, and engine evaluations. This makes it a good project for practicing data cleaning, SQL analysis, feature engineering, and careful interpretation.
