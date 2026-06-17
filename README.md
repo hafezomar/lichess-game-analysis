@@ -2,7 +2,8 @@
 
 This project analyzes online chess games from a 200,000-game Lichess dataset. The goal is to understand how time controls, rating differences, game termination types, and other game-level features relate to chess outcomes.
 
-The project is currently in progress. The first notebook focuses on dataset feasibility, cleaning, and game-level feature preparation. The second notebook focuses on SQL-based analysis. A later notebook will explore engine-evaluation features, and the final notebook will focus on visualizations, insights, and communication.
+The project is currently in progress. The first notebook focuses on dataset feasibility, cleaning, and game-level feature preparation. The second notebook uses SQL to analyze metadata-level patterns around time controls, termination types, rating favorites, and rating gaps. The next notebook will explore engine-evaluation features in more detail.
+
 
 ## Project Motivation
 
@@ -79,16 +80,23 @@ The abandoned games are kept in the processed dataset for completeness, but they
 
 ### 01_sql_game_analysis.ipynb
 
-This notebook focuses on analyzing the clean game-level dataset with SQLite.
+This notebook analyzes the clean game-level dataset with SQLite.
 
-Planned analysis questions include:
+Main questions covered:
 
-* How do termination types differ across Bullet, Blitz, Rapid, and Classical games?
-* Are faster categories more likely to end by time forfeit?
+* How do game endings differ across Bullet, Blitz, Rapid, and Classical?
+* Are time forfeits more common in faster categories?
 * Are time-forfeit wins balanced between White and Black?
 * How often does the rating favorite win?
-* Are upsets more common in faster game categories?
-* How do close-rating games differ from games with a clear rating favorite?
+* Does rating-favorite performance differ across game categories?
+* Does the size of the rating gap affect how reliable the favorite is?
+* Does time-forfeit pressure make rating advantage less reliable?
+* Which metadata signal appears strongest for favorite reliability: rating gap, category, or termination type?
+
+Main metadata-level finding:
+
+Game category strongly affects **how games end**, especially through time forfeits. However, rating-gap size is the clearest metadata driver of whether the favorite wins. Time-forfeit endings do not appear to meaningfully weaken rating advantage once rating gap is considered.
+
 
 ### 02_eval_analysis.ipynb
 
@@ -134,12 +142,13 @@ These findings are still preliminary and will be tested more carefully in the SQ
 
 Planned next steps:
 
-* Continue the SQL analysis notebook using the cleaned game-level dataset
-* Analyze time-forfeit rates across game categories
-* Analyze rating-favorite performance and upset rates
-* Create clear summary tables from SQL queries
-* Build the engine-evaluation notebook as a later extension
-* Create a final visualization and insights notebook after the SQL analysis is stable
+* Start the engine-evaluation analysis notebook
+* Load and inspect selected evaluation columns from the raw dataset
+* Study evaluation swings across different stages of the game
+* Explore whether large evaluation swings can identify possible blunders or turning points
+* Compare evaluation patterns across rating gaps and game categories
+* Later, create a final visualization and insights notebook
+
 
 ## Tools Used
 
