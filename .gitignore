@@ -1,0 +1,31 @@
+# Raw and processed data
+data/raw/
+data/processed/
+
+# Large data/database files
+*.csv
+*.zip
+*.db
+*.sqlite
+*.sqlite3
+*.parquet
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
