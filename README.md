@@ -1,14 +1,14 @@
 # Lichess Game Analysis
 
-This project analyzes online chess games from a 200k-game Lichess dataset. The goal is to understand how time controls, rating differences, game termination types, and other game-level features relate to chess outcomes.
+This project analyzes online chess games from a 200,000-game Lichess dataset. The goal is to understand how time controls, rating differences, game termination types, and other game-level features relate to chess outcomes.
 
-This project is currently in progress. The first notebook focuses on dataset feasibility, cleaning, and early inspection before moving into SQL-based analysis.
+The project is currently in progress. The first notebook focuses on dataset feasibility, cleaning, and game-level feature preparation. The second notebook focuses on SQL-based analysis. A later notebook will explore engine-evaluation features, and the final notebook will focus on visualizations, insights, and communication.
 
 ## Project Motivation
 
 I chose this dataset because it contains both simple game-level metadata and deeper chess-specific information such as move history, clock values, and engine evaluations. This makes it a good project for practicing data cleaning, SQL analysis, feature engineering, and careful interpretation.
 
-Since I'm not highly experienced in chess, I'm being careful not to overinterpret chess-specific variables too early. For now, I'm focusing on patterns that are understandable from the data itself, such as time control, game result, termination type, and rating difference.
+Since I'm not highly experienced in chess, I'm being careful not to overinterpret chess-specific variables too early. For now, I'm focusing on patterns that are understandable from the data itself, such as game category, result, termination type, rating difference, and rating favorite.
 
 This is a smaller and more focused project compared to my Brazilian e-commerce analysis project. I wanted this to be a fun mini project, but still useful for improving an important skill: analytical judgment.
 
@@ -30,15 +30,20 @@ The raw dataset is not included in this repository because it is too large for n
 data/raw/
 ```
 
+Processed files are also excluded from GitHub because they are generated locally from the raw dataset.
+
 ## Current Project Structure
 
 ```text
 lichess-game-analysis/
 ├── data/
-│   ├── raw/              # Raw Kaggle dataset, not tracked by Git
-│   └── processed/        # Processed files, not tracked by Git
+│   ├── raw/                         # Raw Kaggle dataset, not tracked by Git
+│   └── processed/                   # Processed files and SQLite database, not tracked by Git
 ├── notebooks/
-│   └── 00_dataset_feasibility.ipynb
+│   ├── 00_dataset_feasibility.ipynb
+│   ├── 01_sql_game_analysis.ipynb
+│   ├── 02_eval_analysis.ipynb       # Planned engine-evaluation analysis
+│   └── 03_visualizations_insights.ipynb
 ├── reports/
 │   └── figures/
 ├── README.md
@@ -51,36 +56,90 @@ lichess-game-analysis/
 
 ### 00_dataset_feasibility.ipynb
 
-This notebook checks whether the dataset is suitable for analysis.
+This notebook checks whether the dataset is suitable for analysis and prepares a clean game-level dataset for later SQL work.
 
 Main steps completed:
 
-* Loaded a selected subset of columns from the large raw CSV
+* Loaded selected metadata columns from the full 200,000-row raw dataset
 * Checked row structure and confirmed that each row represents one chess game
-* Dropped raw index artifact columns
+* Inspected raw index artifact columns and created a clean `game_id`
+* Checked consistency between `Date` and `UTCDate`
+* Converted the game date into a proper datetime column
 * Checked missing values in key metadata columns
+* Identified a small number of missing rating-difference values
 * Checked duplicate records
-* Inspected numeric rating ranges and rating-difference outliers
-* Created an initial `winner` feature from the game result
-* Explored early crosstab-based insights about time controls and game endings
+* Inspected rating ranges and rating-difference outliers
+* Created a readable `winner` feature from the raw game result
+* Created rating-difference features such as `rating_diff_white_minus_black`, `abs_rating_diff`, and `rating_favorite`
+* Identified 5 abandoned games with `Result = '*'`
+* Explored early crosstab-based patterns between category, termination type, and winner
+* Exported a clean game-level dataset for SQL analysis
+
+The abandoned games are kept in the processed dataset for completeness, but they should be excluded or handled separately in any analysis that depends on knowing the winner.
+
+### 01_sql_game_analysis.ipynb
+
+This notebook focuses on analyzing the clean game-level dataset with SQLite.
+
+Planned analysis questions include:
+
+* How do termination types differ across Bullet, Blitz, Rapid, and Classical games?
+* Are faster categories more likely to end by time forfeit?
+* Are time-forfeit wins balanced between White and Black?
+* How often does the rating favorite win?
+* Are upsets more common in faster game categories?
+* How do close-rating games differ from games with a clear rating favorite?
+
+### 02_eval_analysis.ipynb
+
+This notebook is planned for later analysis of the engine-evaluation columns.
+
+The raw dataset contains many evaluation columns such as `Eval_ply_1`, `Eval_ply_2`, and so on. These columns are more chess-specific and require more careful interpretation, so they are intentionally deferred until after the game-level SQL analysis is complete.
+
+Possible future questions include:
+
+* How does engine evaluation change across the opening and middle game?
+* Can large evaluation swings be used to identify blunders or turning points?
+* Do evaluation swings differ across rating groups or time-control categories?
+* Are faster games associated with more unstable evaluation patterns?
+
+This part of the project will be treated as a separate extension, not mixed into the initial game-level feasibility and SQL notebooks.
+
+### 03_visualizations_insights.ipynb
+
+This notebook is planned for turning the main SQL and analysis outputs into clear visualizations and written insights.
+
+The goal of this notebook is not to create many charts for decoration. Instead, it will focus on communicating the strongest findings from the project clearly and honestly.
+
+Planned work includes:
+
+* Visualizing time-forfeit rates across game categories
+* Visualizing winner distributions by category and termination type
+* Visualizing rating-favorite performance
+* Visualizing upset patterns across game categories
+* Writing concise insight summaries under each major chart
+* Separating strong findings from limitations and assumptions
+
+This notebook will act as the final storytelling layer of the project.
 
 ## Early Findings
 
-The first useful insight is that faster time controls appear to change how games end. In the 20,000-game sample, Bullet games had a much higher time-forfeit rate than Blitz, Rapid, or Classical games.
+The first useful insight is that faster time controls appear to change how games end. In the full game-level metadata dataset, Bullet games have a much higher time-forfeit rate than Blitz, Rapid, or Classical games.
 
-At the same time, time-forfeit wins appeared to be fairly balanced between White and Black. This suggests that faster formats may increase the importance of the clock without strongly favoring one color.
+At the same time, time-forfeit wins appear to be fairly balanced between White and Black. This suggests that faster formats may increase the importance of the clock without strongly favoring one color.
 
-These findings are still preliminary and will be tested more carefully in later analysis.
+These findings are still preliminary and will be tested more carefully in the SQL analysis notebook before being turned into final visualizations and written insights.
 
 ## Next Steps
 
 Planned next steps:
 
-* Create a cleaned game-level dataset
-* Export the cleaned sample into SQLite
-* Build a second notebook focused on SQL analysis
-* Analyze rating advantage, upset rates, time-forfeit rates, and opening patterns
-* Optionally engineer features from clock and engine-evaluation columns
+* Continue the SQL analysis notebook using the cleaned game-level dataset
+* Analyze time-forfeit rates across game categories
+* Analyze rating-favorite performance and upset rates
+* Create clear summary tables from SQL queries
+* Build the engine-evaluation notebook as a later extension
+* Create a final visualization and insights notebook after the SQL analysis is stable
 
 ## Tools Used
 
@@ -95,3 +154,5 @@ Planned next steps:
 This project is licensed under the MIT License.
 
 The dataset itself is not owned by me and is subject to its original Kaggle dataset license.
+
+Thank you for taking your time to check out this mini project. :)
