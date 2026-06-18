@@ -2,19 +2,19 @@
 
 This project analyzes online chess games from a 200,000-game Lichess dataset. The goal is to understand how time controls, rating differences, game termination types, and selected engine-evaluation features relate to chess outcomes.
 
-The project is currently in progress. The first notebook focuses on dataset feasibility, cleaning, and game-level feature preparation. The second notebook uses SQL to analyze metadata-level patterns around time controls, termination types, rating favorites, and rating gaps. The third notebook explores engine-evaluation columns through feature engineering, SQL summaries, and careful limitations. The next notebook will focus on final visualizations and written insights.
+The project is built as a focused data analysis workflow: dataset feasibility, SQL-based metadata analysis, engine-evaluation feature engineering, and final visual storytelling. The strongest findings came from the metadata analysis, while the engine-evaluation work added useful feature engineering practice and important interpretation limits.
 
 ## Project Motivation
 
-I chose this dataset because it contains both simple game-level metadata and deeper chess-specific information such as move history, clock values, and engine evaluations. This makes it a good project for practicing data cleaning, SQL analysis, feature engineering, and careful interpretation.
+I chose this dataset because it contains both simple game-level metadata and deeper chess-specific information such as move history, clock values, and engine evaluations. This made it a good project for practicing data cleaning, SQL analysis, feature engineering, visualization, and careful interpretation.
 
-Since I'm not highly experienced in chess, I'm being careful not to overinterpret chess-specific variables too early. For now, I'm focusing on patterns that are understandable from the data itself, such as game category, result, termination type, rating difference, rating favorite, and carefully engineered evaluation features.
+Since I am not highly experienced in chess, I was careful not to overinterpret chess-specific variables too early. I focused mainly on patterns that could be supported directly from the data: game category, result, termination type, rating difference, rating favorite, and sign-independent engine-evaluation features.
 
 This is a smaller and more focused project compared to my Brazilian e-commerce analysis project. I wanted this to be a fun mini project, but still useful for improving an important skill: analytical judgment.
 
-Instead of only finding surface-level “what” results, such as which category is most common or which side wins more often, I want to practice going deeper into the “how” and “why” behind the patterns. For example, if faster games end differently from slower games, I want to understand whether that is connected to time pressure, rating gaps, termination type, or other game-level factors.
+Instead of only finding surface-level “what” results, such as which category is most common or which side wins more often, I wanted to practice going deeper into the “how” and “why” behind the patterns. For example, if faster games end differently from slower games, I wanted to understand whether that was connected to time pressure, rating gaps, termination type, or other game-level factors.
 
-The goal is not just to produce charts and visualizations, but to build stronger reasoning around the insights.
+The goal was not just to produce charts, but to build stronger reasoning around the insights.
 
 ## Dataset
 
@@ -32,7 +32,7 @@ data/raw/
 
 Processed files are also excluded from GitHub because they are generated locally from the raw dataset.
 
-## Current Project Structure
+## Project Structure
 
 ```text
 lichess-game-analysis/
@@ -43,18 +43,19 @@ lichess-game-analysis/
 │   ├── 00_dataset_feasibility.ipynb
 │   ├── 01_sql_game_analysis.ipynb
 │   ├── 02_engine_evaluation_analysis.ipynb
-│   └── 03_visualizations_insights.ipynb   # Planned visualization/storytelling notebook
+│   └── 03_visualizations_and_insights.ipynb
 ├── reports/
-│   └── figures/
+│   └── figures/                     # Exported visualizations
 ├── sql/
-│   └── game_analysis.sql
+│   ├── game_analysis.sql
+│   └── engine_eval_analysis.sql
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
 └── LICENSE
 ```
 
-## Notebook Progress
+## Notebook Summary
 
 ### 00_dataset_feasibility.ipynb
 
@@ -77,7 +78,7 @@ Main steps completed:
 * Explored early crosstab-based patterns between category, termination type, and winner
 * Exported a clean game-level dataset for SQL analysis
 
-The abandoned games are kept in the processed dataset for completeness, but they should be excluded or handled separately in any analysis that depends on knowing the winner.
+The abandoned games are kept in the processed dataset for completeness, but they are excluded or handled separately in analysis that depends on knowing the winner.
 
 ### 01_sql_game_analysis.ipynb
 
@@ -97,7 +98,7 @@ Main questions covered:
 
 Main metadata-level finding:
 
-Game category strongly affects **how games end**, especially through time forfeits. However, rating-gap size is the clearest metadata driver of whether the favorite wins. Time-forfeit endings do not appear to meaningfully weaken rating advantage once rating gap is considered.
+Game category strongly affects **how games end**, especially through time forfeits. Bullet games had the clearest time-pressure pattern, with nearly half ending by time forfeit. However, rating-gap size was the clearest metadata signal for whether the favorite won. Time-forfeit endings did not appear to meaningfully weaken rating advantage once rating gap was considered.
 
 ### 02_engine_evaluation_analysis.ipynb
 
@@ -129,48 +130,77 @@ The main lesson from this notebook is that feature engineering is hypothesis tes
 
 ### 03_visualizations_insights.ipynb
 
-This notebook is planned for turning the strongest supported outputs into clear visualizations and written insights.
+This notebook turns the strongest supported outputs into a focused set of visualizations and written insights.
 
-The goal of this notebook is not to create many charts for decoration. Instead, it will focus on communicating the strongest findings from the project clearly and honestly.
+The goal of this notebook is not to create many charts for decoration. Instead, it focuses on six visuals that either support a strong finding or explain an important limitation:
 
-Planned work includes:
+* Time-forfeit rate by game category
+* Favorite win rate by rating-gap bucket
+* Favorite win rate by rating-gap bucket and category
+* Average maximum evaluation swing by game category
+* Final evaluation sign split by termination type
+* Evaluation missingness by ply
 
-* Visualizing time-forfeit rates across game categories
-* Visualizing rating-favorite performance across rating-gap buckets
-* Visualizing rating-gap composition by game category
-* Visualizing the strongest metadata-level findings from Notebook 01
-* Including selected evaluation-feature visuals only where they add real value
-* Writing concise insight summaries under each major chart
-* Separating strong findings from limitations and assumptions
+Main visualization-level finding:
 
-This notebook will act as the final storytelling layer of the project.
+The final visuals show that metadata produced the strongest project story. Bullet games were much more affected by time pressure, and rating gap was the clearest signal for favorite reliability. The engine-evaluation visuals were still useful, but mainly because they showed limits: broad average eval swings were nearly flat across categories, final eval sign was not safe for winner-direction claims, and later ply evaluation columns became mostly missing.
 
-## Findings So Far
+## Key Findings
 
-The strongest finding so far is that faster time controls change how games end. Bullet games have a much higher time-forfeit rate than Blitz, Rapid, or Classical games.
+### 1. Bullet games are heavily shaped by time pressure
 
-At the same time, time-forfeit wins appear to be fairly balanced between White and Black. This suggests that faster formats increase the importance of the clock without strongly favoring one color.
+Bullet games had a much higher time-forfeit rate than Blitz, Rapid, or Classical games. Nearly half of Bullet games ended by time forfeit, making time pressure one of the clearest patterns in the dataset.
 
-The second major finding is that rating-gap size is the strongest metadata signal for favorite reliability. Small favorites are only modestly more likely to win, while large rating favorites are much more reliable.
+At the same time, time-forfeit wins were fairly balanced between White and Black. This suggests that faster formats increase the importance of the clock without clearly favoring one color.
 
-The engine-evaluation notebook added an important limitation: broad volatility features were carefully engineered, but they did not clearly explain favorite wins, upsets, or category differences. This made the metadata-level findings from Notebook 01 stand out as stronger and easier to interpret.
+### 2. Rating gap is the clearest metadata signal for favorite reliability
 
-## Next Steps
+Rating favorites became more reliable as the rating gap increased. Small favorites were only modestly more likely to win, while large rating favorites won much more often.
 
-Planned next steps:
+This pattern remained visible across game categories, which made rating gap a stronger and more consistent metadata signal than category alone.
 
-* Create the final visualization and insights notebook
-* Focus visualizations on the strongest supported findings from Notebook 01
-* Add only the evaluation-feature visuals that communicate a real point
-* Write concise explanations under each chart
-* Clearly separate findings, limitations, and assumptions
-* Polish the README after the visualization notebook is complete
+### 3. Broad engine-evaluation volatility features were weaker than expected
+
+The engine-evaluation features were technically useful to engineer, but they did not reveal a dramatic separation between categories, favorite wins, and upsets. Average maximum evaluation swing was nearly identical across Bullet, Blitz, Rapid, and Classical games.
+
+This does not mean engine evaluations are useless. It means broad game-level averages are probably too blunt to capture turning points or tactical swings properly. A deeper analysis would likely need a move-level structure.
+
+### 4. Evaluation-sign interpretation was not safe enough for directional claims
+
+A sanity check showed that the final available evaluation sign was almost evenly split across normal and time-forfeit games. The sign also did not clearly align with the game winner in a simple White/Black perspective check.
+
+Because of that, this project avoids claims like “the winner was ahead” or “the loser was behind” based only on raw evaluation sign. That restraint is part of the analysis, not a weakness.
+
+### 5. Late-ply evaluation analysis is limited by missingness
+
+Evaluation coverage drops sharply as ply number increases. Early evaluation columns are available for almost every game, but later columns become mostly missing because many games end before reaching those ply numbers.
+
+This limits how far late-game evaluation analysis can be pushed without a more careful move-level dataset or sampling strategy.
+
+## Main Lesson
+
+The biggest lesson from this project is that feature engineering is hypothesis testing, not decoration.
+
+Some features produced strong insights, especially the metadata features around time control and rating gap. Other features were harder to engineer but less useful analytically, especially broad engine-evaluation volatility summaries. That still made the project stronger because it separated what the data clearly supported from what required deeper validation.
+
+## Possible Future Work
+
+A deeper version of this project could include:
+
+* Reshaping engine-evaluation columns into a move-level format
+* Verifying the engine-evaluation sign convention using documentation or known game examples
+* Detecting individual turning points instead of relying on broad average volatility
+* Comparing evaluation swings by game phase
+* Studying whether time-forfeit losses happen from objectively winning, losing, or equal positions after eval semantics are verified
+* Building a small interactive dashboard for the main metadata findings
 
 ## Tools Used
 
 * Python
 * Pandas
 * NumPy
+* Matplotlib
+* Seaborn
 * Jupyter Notebook
 * SQLite
 * Git/GitHub
