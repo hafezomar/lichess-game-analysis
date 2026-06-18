@@ -224,7 +224,49 @@ ORDER BY favorite_win_rate DESC;
 
 
 -- ============================================================
--- Section 7: Favorite Win Rate by Rating Gap and Game Category
+-- Section 7: Rating Gap Distribution by Game Category
+--
+-- Goal:
+-- Check whether game categories contain similar mixes of small,
+-- medium, and large rating-gap games. This provides context before
+-- comparing favorite win rates across category and rating-gap bucket.
+-- ============================================================
+
+WITH rating_gap_within_category AS (
+	SELECT
+		g.Category,
+		CASE
+            WHEN g.abs_rating_diff > 50 AND g.abs_rating_diff < 100 THEN '51-99'
+            WHEN g.abs_rating_diff >= 100 AND g.abs_rating_diff < 200 THEN '100-199'
+            WHEN g.abs_rating_diff >= 200 AND g.abs_rating_diff < 400 THEN '200-399'
+			ELSE '400+'
+		END AS rating_gap_bucket,
+		COUNT(*) AS total_decisive_favorite_games
+		FROM games AS g
+		WHERE g.winner IN ('White', 'Black')
+			AND g.rating_favorite IN ('White favorite', 'Black favorite')
+		GROUP BY
+			g.Category,
+			rating_gap_bucket
+)
+
+SELECT
+	rgwc.Category,
+	rgwc.rating_gap_bucket,
+	rgwc.total_decisive_favorite_games,
+	ROUND(rgwc.total_decisive_favorite_games * 100.0 / SUM(rgwc.total_decisive_favorite_games) OVER (PARTITION BY rgwc.Category), 3) AS percentage_within_category
+FROM rating_gap_within_category AS rgwc
+ORDER BY
+    rgwc.Category,
+    CASE rgwc.rating_gap_bucket
+        WHEN '400+' THEN 4
+        WHEN '200-399' THEN 3
+        WHEN '100-199' THEN 2
+        WHEN '51-99' THEN 1
+    END DESC;
+
+-- ============================================================
+-- Section 8: Favorite Win Rate by Rating Gap and Game Category
 --
 -- Goal:
 -- Compare favorite win rates across game categories while also
@@ -278,10 +320,9 @@ ORDER BY
         WHEN '51-99' THEN 1
     END DESC,
     crgo.Category;
-
-
+	
 -- ============================================================
--- Section 8: Does Time Forfeit Change Rating Favorite Reliability?
+-- Section 9: Does Time Forfeit Change Rating Favorite Reliability?
 --
 -- Goal:
 -- Compare favorite win rates in Normal vs Time forfeit games
@@ -342,7 +383,7 @@ ORDER BY
 
 
 -- ============================================================
--- Section 9: Comparing the Strength of Metadata Signals
+-- Section 10: Comparing the Strength of Metadata Signals
 --
 -- Goal:
 -- Summarize which metadata signal moves favorite win rate the most:
